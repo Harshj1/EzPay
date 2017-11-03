@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">EzPay</string>
+    <string name="sign_out">sign_out</string>
 </resources>
