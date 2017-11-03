@@ -1,9 +1,5 @@
-package codeit.ezpay;
+package codeit.ezpay.Model;
 
-
-/**
- * Created by beast on 14/4/17.
- */
 
 public class ChatMessage {
 

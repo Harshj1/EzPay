@@ -1,6 +1,5 @@
 package codeit.ezpay;
 
-import android.*;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -41,6 +40,7 @@ import ai.api.android.AIService;
 import ai.api.model.AIRequest;
 import ai.api.model.AIResponse;
 import ai.api.model.Result;
+import codeit.ezpay.Model.ChatMessage;
 
 public class LoginActivity extends AppCompatActivity implements AIListener {
 
@@ -54,7 +54,7 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
     RecyclerView recyclerView;
     EditText editText;
     RelativeLayout addBtn;
-    DatabaseReference ref;
+    DatabaseReference ref,chatref,transref,typeref;
     FirebaseRecyclerAdapter<ChatMessage,chat_rec> adapter;
     Boolean flagFab = true;
     private AIService aiService;
@@ -92,6 +92,11 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
 
         final AIRequest aiRequest = new AIRequest();
 
+        chatref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
+        transref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
+        typeref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
+        
+
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -100,8 +105,8 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
 
                 if (!message.equals("")) {
 
-                    ChatMessage chatMessage = new ChatMessage(message, "user");
-                    ref.child("chat").push().setValue(chatMessage);
+                    ChatMessage chatMessage = new ChatMessage(message, mFirebaseAuth.getCurrentUser().getDisplayName());
+                    chatref.child("chat").push().setValue(chatMessage);
 
                     aiRequest.setQuery(message);
                     new AsyncTask<AIRequest,Void,AIResponse>(){
@@ -123,7 +128,7 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
                                 Result result = response.getResult();
                                 String reply = result.getFulfillment().getSpeech();
                                 ChatMessage chatMessage = new ChatMessage(reply, "bot");
-                                ref.child("chat").push().setValue(chatMessage);
+                                chatref.child("chat").push().setValue(chatMessage);
                             }
                         }
                     }.execute(aiRequest);
@@ -172,11 +177,10 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
             }
         });
 
-        adapter = new FirebaseRecyclerAdapter<ChatMessage, chat_rec>(ChatMessage.class,R.layout.msglist,chat_rec.class,ref.child("chat")) {
+        adapter = new FirebaseRecyclerAdapter<ChatMessage, chat_rec>(ChatMessage.class,R.layout.msglist,chat_rec.class,chatref.child("chat")) {
             @Override
             protected void populateViewHolder(chat_rec viewHolder, ChatMessage model, int position) {
-
-                if (model.getMsgUser().equals("user")) {
+                if (model.getMsgUser().equals(mFirebaseAuth.getCurrentUser().getDisplayName())) {
 
 
                     viewHolder.rightText.setText(model.getMsgText());
@@ -298,13 +302,13 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
         Result result = response.getResult();
 
         String message = result.getResolvedQuery();
-        ChatMessage chatMessage0 = new ChatMessage(message, "user");
-        ref.child("chat").push().setValue(chatMessage0);
+        ChatMessage chatMessage0 = new ChatMessage(message,mFirebaseAuth.getCurrentUser().getDisplayName() );
+        chatref.child("chat").push().setValue(chatMessage0);
 
 
         String reply = result.getFulfillment().getSpeech();
         ChatMessage chatMessage = new ChatMessage(reply, "bot");
-        ref.child("chat").push().setValue(chatMessage);
+        chatref.child("chat").push().setValue(chatMessage);
 
 
     }
