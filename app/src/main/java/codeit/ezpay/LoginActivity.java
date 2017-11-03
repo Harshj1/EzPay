@@ -28,8 +28,11 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 
 import ai.api.AIDataService;
@@ -41,6 +44,7 @@ import ai.api.model.AIRequest;
 import ai.api.model.AIResponse;
 import ai.api.model.Result;
 import codeit.ezpay.Model.ChatMessage;
+import codeit.ezpay.Model.User;
 
 public class LoginActivity extends AppCompatActivity implements AIListener {
 
@@ -54,10 +58,11 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
     RecyclerView recyclerView;
     EditText editText;
     RelativeLayout addBtn;
-    DatabaseReference ref,chatref,transref,typeref;
+    DatabaseReference ref,chatref,transref,typeref,userRef;
     FirebaseRecyclerAdapter<ChatMessage,chat_rec> adapter;
     Boolean flagFab = true;
     private AIService aiService;
+    private int userFoundFlag = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +100,7 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
         chatref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
         transref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
         typeref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
+        userRef=FirebaseDatabase.getInstance().getReference().child("users");
         
 
         addBtn.setOnClickListener(new View.OnClickListener() {
@@ -217,20 +223,41 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
 
         recyclerView.setAdapter(adapter);
 
-    mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
 
-                FirebaseUser user= firebaseAuth.getCurrentUser();
+                final FirebaseUser user= firebaseAuth.getCurrentUser();
                 if(user!=null)
                 {
+                    userRef.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+
+                            for(DataSnapshot snapshot : dataSnapshot.getChildren())
+                            {
+                                if(snapshot.child("uid").getValue().toString().equals(user.getUid())) {
+                                    userFoundFlag = 1;
+                                }
+                            }
+
+                            if(userFoundFlag==0)
+                            {
+                                userRef.push().setValue((new User(user.getDisplayName(), user.getUid(), user.getEmail())));
+                            }
+                        }
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                     Toast.makeText(LoginActivity.this,"You're signed in",Toast.LENGTH_SHORT).show();
 //                    onSignedInInitialize(user.getDisplayName());
 
                 }
                 else
                 {
-                 //   OnSignedOutCleanUp();
+                    //   OnSignedOutCleanUp();
 
                     startActivityForResult(AuthUI.getInstance()
                             .createSignInIntentBuilder()
@@ -254,6 +281,7 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
         {
             case R.id.sign_out_menu:
                 AuthUI.getInstance().signOut(this);
+                userFoundFlag=0;
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
