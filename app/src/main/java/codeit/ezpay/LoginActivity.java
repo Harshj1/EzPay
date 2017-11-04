@@ -19,10 +19,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.Interpolator;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
@@ -39,10 +39,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 
 import ai.api.AIDataService;
@@ -56,7 +53,6 @@ import ai.api.model.Result;
 import codeit.ezpay.Model.ChatMessage;
 import codeit.ezpay.Model.Transaction;
 import codeit.ezpay.Model.Type;
-import codeit.ezpay.Model.User;
 
 public class LoginActivity extends AppCompatActivity implements AIListener {
 
@@ -70,6 +66,8 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
     RecyclerView recyclerView;
     EditText editText;
     RelativeLayout addBtn;
+    ImageView userImage;
+    TextView userName;
     DatabaseReference ref,chatref,transref,transref1,typeref,userRef;
     FirebaseRecyclerAdapter<ChatMessage,chat_rec> adapter;
     Boolean flagFab = true;
@@ -84,11 +82,16 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
 
         ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.RECORD_AUDIO},1);
 
+        final android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+        actionBar.setCustomView(R.layout.actionbar_custom_view_home);
+        actionBar.setDisplayShowTitleEnabled(false);
+        actionBar.setDisplayShowCustomEnabled(true);
 
         recyclerView = (RecyclerView)findViewById(R.id.recyclerView);
         editText = (EditText)findViewById(R.id.editText);
         addBtn = (RelativeLayout)findViewById(R.id.addBtn);
-
+        userImage=(ImageView)findViewById(R.id.userImage);
+        userName=(TextView)findViewById(R.id.userName);
         recyclerView.setHasFixedSize(true);
         final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setStackFromEnd(true);
@@ -115,6 +118,13 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
 
         userRef=FirebaseDatabase.getInstance().getReference().child("users");
 
+        userName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(LoginActivity.this,UserProfile.class));
+                finish();
+            }
+        });
 
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -354,36 +364,36 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
 
 
 
-        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-
-                final FirebaseUser user= firebaseAuth.getCurrentUser();
-                if(user!=null)
-                {
-                    userRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-
-                            for(DataSnapshot snapshot : dataSnapshot.getChildren())
-                            {
-                                // Log.e("TAG",snapshot.toString());
-                                if(snapshot.child("uid").getValue().toString().equals(user.getUid())) {
-                                    userFoundFlag = 1;
-                                }
-                            }
-
-                            if(userFoundFlag==0)
-                            {
-                                userRef.push().setValue((new User(user.getDisplayName(), user.getUid(), user.getEmail())));
-                                transref.child("transaction").push().setValue(new codeit.ezpay.Model.Transaction(5000,getTimeStamp(),new Type("Initial","Initial","Deposit",5000)));
-                            }
-                        }
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
+//        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+//            @Override
+//            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+//
+//                final FirebaseUser user= firebaseAuth.getCurrentUser();
+//                if(user!=null)
+//                {
+//                    userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+//                        @Override
+//                        public void onDataChange(DataSnapshot dataSnapshot) {
+//
+//                            for(DataSnapshot snapshot : dataSnapshot.getChildren())
+//                            {
+//                                // Log.e("TAG",snapshot.toString());
+//                                if(snapshot.child("uid").getValue().toString().equals(user.getUid())) {
+//                                    userFoundFlag = 1;
+//                                }
+//                            }
+//
+//                            if(userFoundFlag==0)
+//                            {
+//                                userRef.push().setValue((new User(user.getDisplayName(), user.getUid(), user.getEmail(),user.getPhotoUrl().toString())));
+//                                transref.child("transaction").push().setValue(new codeit.ezpay.Model.Transaction(5000,getTimeStamp(),new Type("Initial","Initial","Deposit",5000)));
+//                            }
+//                        }
+//                        @Override
+//                        public void onCancelled(DatabaseError databaseError) {
+//
+//                        }
+//                    });
                     chatref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
                     transref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
                     typeref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
@@ -427,22 +437,66 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
 
                     recyclerView.setAdapter(adapter);
 
-                    Toast.makeText(LoginActivity.this,"You're signed in",Toast.LENGTH_SHORT).show();
-//                    onSignedInInitialize(user.getDisplayName());
 
-                }
-                else
-                {
-                    //   OnSignedOutCleanUp();
 
-                    startActivityForResult(AuthUI.getInstance()
-                            .createSignInIntentBuilder()
-                            .setIsSmartLockEnabled(false)
-                            .setProviders(AuthUI.EMAIL_PROVIDER,AuthUI.GOOGLE_PROVIDER)
-                            .build(),RC_SIGN_IN);
+        //get current user
+        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user == null) {
+                    // user auth state is changed - user is null
+                    // launch login activity
+                    startActivity(new Intent(LoginActivity.this, SignIn.class));
+                    finish();
                 }
             }
         };
+//                    userRef.addValueEventListener(new ValueEventListener() {
+//                        @Override
+//                        public void onDataChange(DataSnapshot dataSnapshot) {
+//
+//                            for(DataSnapshot snapshot : dataSnapshot.getChildren())
+//                            {
+//                               // Log.e("TAG",snapshot.toString());
+//                                if(snapshot.child("uid").getValue().toString().equals(user.getUid())) {
+//                                    userFoundFlag = 1;
+//                                    Glide.with(userImage.getContext()).load(user.getPhotoUrl().toString()).into(userImage);
+//                                    userName.setText(user.getDisplayName());
+//                                }
+//                            }
+//
+//                            if(userFoundFlag==0)
+//                            {
+//                                userRef.push().setValue((new User(user.getDisplayName(), user.getUid(), user.getEmail(),user.getPhotoUrl().toString())));
+//                                Glide.with(userImage.getContext()).load(mFirebaseAuth.getCurrentUser().getPhotoUrl().toString()).into(userImage);
+                                userName.setText(mFirebaseAuth.getCurrentUser().getDisplayName());
+//                                transref.child("transaction").push().setValue(new codeit.ezpay.Model.Transaction(5000,getTimeStamp(),new Type("Initial","Initial","Deposit",5000)));
+//                            }
+//                        }
+//                        @Override
+//                        public void onCancelled(DatabaseError databaseError) {
+//
+//                        }
+//                    });
+//                    Toast.makeText(LoginActivity.this,"You're signed in",Toast.LENGTH_SHORT).show();
+////                    onSignedInInitialize(user.getDisplayName());
+//
+//                }
+//                else
+//                {
+//                    //   OnSignedOutCleanUp();
+//
+//                    startActivityForResult(AuthUI.getInstance()
+//                            .createSignInIntentBuilder()
+//                            .setIsSmartLockEnabled(false)
+//                            .setProviders(AuthUI.EMAIL_PROVIDER,AuthUI.GOOGLE_PROVIDER)
+//                            .build(),RC_SIGN_IN);
+//                }
+//            }
+//        };
     }
 
     public String getTimeStamp(){
@@ -472,6 +526,20 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mAuthStateListener != null) {
+            mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
+        }
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_SIGN_IN) {
@@ -487,15 +555,13 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
     @Override
     protected void onPause() {
         super.onPause();
-        if (mAuthStateListener != null) {
-            mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
-        }
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+        //mFirebaseAuth.addAuthStateListener(mAuthStateListener);
     }
 
     public void ImageViewAnimatedChange(Context c, final ImageView v, final Bitmap new_image) {

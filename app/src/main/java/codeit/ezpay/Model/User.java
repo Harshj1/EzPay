@@ -15,6 +15,7 @@ public class User {
         this.name = name;
         this.uid = uid;
         this.mail_id = mail_id;
+      //  this.profile_url=profile_url;
     }
 
     public String getName() {
