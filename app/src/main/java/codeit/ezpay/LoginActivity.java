@@ -13,6 +13,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -64,11 +65,12 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
     RecyclerView recyclerView;
     EditText editText;
     RelativeLayout addBtn;
-    DatabaseReference ref,chatref,transref,typeref,userRef;
+    DatabaseReference ref,chatref,transref,transref1,typeref,userRef;
     FirebaseRecyclerAdapter<ChatMessage,chat_rec> adapter;
     Boolean flagFab = true;
     private AIService aiService;
     private int userFoundFlag = 0;
+    String balance1=null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,9 +140,35 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
                             if (response != null) {
 
                                 Result result = response.getResult();
-                                String reply = result.getFulfillment().getSpeech();
-                                ChatMessage chatMessage = new ChatMessage(reply, "bot");
-                                chatref.child("chat").push().setValue(chatMessage);
+                                final String reply = result.getFulfillment().getSpeech();
+                                if(reply.equals("Balance is"))
+                                {
+                                    transref.child("transaction").addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            for(DataSnapshot snapshot : dataSnapshot.getChildren())
+                                            {
+                                                Log.e("TAG",snapshot.toString());
+                                                balance1=snapshot.child("balance").getValue().toString();
+                                                Log.e("Tag",snapshot.child("balance").getValue().toString());
+                                                break;
+                                            }
+                                            ChatMessage chatMessage = new ChatMessage(reply+" "+balance1, "bot");
+                                            chatref.child("chat").push().setValue(chatMessage);
+                                        }
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
+
+                                        }
+
+                                    });
+
+                                }
+                                else{
+                                    Log.e("Tag",reply);
+                                    ChatMessage chatMessage = new ChatMessage(reply, "bot");
+                                    chatref.child("chat").push().setValue(chatMessage);
+                                }
                             }
                         }
                     }.execute(aiRequest);
@@ -201,13 +229,10 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
                     chatref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
                     transref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
                     typeref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
-
-
                     adapter = new FirebaseRecyclerAdapter<ChatMessage, chat_rec>(ChatMessage.class,R.layout.msglist,chat_rec.class,chatref.child("chat")) {
                         @Override
                         protected void populateViewHolder(chat_rec viewHolder, ChatMessage model, int position) {
                             if (model.getMsgUser().equals(mFirebaseAuth.getCurrentUser().getDisplayName())) {
-
 
                                 viewHolder.rightText.setText(model.getMsgText());
 
@@ -215,6 +240,7 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
                                 viewHolder.leftText.setVisibility(View.GONE);
                             }
                             else {
+
                                 viewHolder.leftText.setText(model.getMsgText());
 
                                 viewHolder.rightText.setVisibility(View.GONE);
@@ -249,6 +275,7 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
 
                             for(DataSnapshot snapshot : dataSnapshot.getChildren())
                             {
+                               // Log.e("TAG",snapshot.toString());
                                 if(snapshot.child("uid").getValue().toString().equals(user.getUid())) {
                                     userFoundFlag = 1;
                                 }
@@ -294,7 +321,7 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item ) {
         int id = item.getItemId();
         if (id == R.id.sign_out_menu) {
             AuthUI.getInstance()
