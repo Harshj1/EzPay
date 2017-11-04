@@ -96,6 +96,7 @@ public class SignUp extends AppCompatActivity {
                     return;
                 }
 
+                
                 progressBar.setVisibility(View.VISIBLE);
                 //create user
                 auth.createUserWithEmailAndPassword(email, password)
