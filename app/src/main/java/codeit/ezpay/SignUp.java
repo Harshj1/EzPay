@@ -15,6 +15,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -32,7 +33,12 @@ public class SignUp extends AppCompatActivity {
     private Button btnSignIn, btnSignUp;
     private ProgressBar progressBar;
     private FirebaseAuth auth;
+    String name;
+    private FirebaseAuth.AuthStateListener mAuthStateListener;
+
     DatabaseReference ref,userRef,transref;
+    private FirebaseAuth.AuthStateListener mAuthListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,7 +75,7 @@ public class SignUp extends AppCompatActivity {
 
                 String email = inputEmail.getText().toString().trim();
                 String password = inputPassword.getText().toString().trim();
-                final String name=inputName.getText().toString().trim();
+                name=inputName.getText().toString().trim();
                 String creditCardNumber=inputCreditCardNumber.getText().toString().trim();
                 if (TextUtils.isEmpty(email)) {
                     Toast.makeText(getApplicationContext(), "Enter email address!", Toast.LENGTH_SHORT).show();
@@ -112,19 +118,36 @@ public class SignUp extends AppCompatActivity {
                                     Toast.makeText(SignUp.this, "Authentication failed." + task.getException(),
                                             Toast.LENGTH_SHORT).show();
                                 } else {
-                                    transref = ref.child(auth.getCurrentUser().getUid());
-                                    UserProfileChangeRequest profileChangeRequest = new UserProfileChangeRequest.Builder().setDisplayName(name).build();
-                                    auth.getCurrentUser().updateProfile(profileChangeRequest);
-                                    userRef.push().setValue((new User(auth.getCurrentUser().getDisplayName(), auth.getCurrentUser().getUid(), auth.getCurrentUser().getEmail())));
-                                    transref.child("transaction").push().setValue(new codeit.ezpay.Model.Transaction(5000,getTimeStamp(),new Type("Initial","Initial","Deposit",5000)));
-                                    startActivity(new Intent(SignUp.this, LoginActivity.class));
-                                    finish();
+//                                    transref = ref.child(auth.getCurrentUser().getUid());
+//                                    UserProfileChangeRequest profileChangeRequest = new UserProfileChangeRequest.Builder().setDisplayName(name).build();
+//                                    auth.getCurrentUser().updateProfile(profileChangeRequest);
+//                                    userRef.push().setValue((new User(auth.getCurrentUser().getDisplayName(), auth.getCurrentUser().getUid(), auth.getCurrentUser().getEmail())));
+//                                    transref.child("transaction").push().setValue(new codeit.ezpay.Model.Transaction(5000,getTimeStamp(),new Type("Initial","Initial","Deposit",5000)));
+//                                    startActivity(new Intent(SignUp.this, LoginActivity.class));
+//                                    finish();
                                 }
                             }
                         });
 
             }
         });
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if(user!=null){
+                    UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                            .setDisplayName(name).build();
+                    user.updateProfile(profileUpdates);
+                    transref = ref.child(auth.getCurrentUser().getUid());
+                    userRef.push().setValue((new User(name, auth.getCurrentUser().getUid(), auth.getCurrentUser().getEmail())));
+                    transref.child("transaction").push().setValue(new codeit.ezpay.Model.Transaction(5000,getTimeStamp(),new Type("Initial","Initial","Deposit",5000)));
+                    Intent intent = new Intent(SignUp.this, LoginActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+            }
+        };
     }
     public String getTimeStamp(){
         String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());;
@@ -134,6 +157,15 @@ public class SignUp extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        auth.addAuthStateListener(mAuthListener);
         progressBar.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        if(mAuthListener != null){
+            auth.removeAuthStateListener(mAuthListener);
+        }
     }
 }

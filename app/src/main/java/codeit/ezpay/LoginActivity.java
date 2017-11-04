@@ -555,13 +555,15 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
     @Override
     protected void onPause() {
         super.onPause();
-
+        if (mAuthStateListener != null) {
+            mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        //mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
     }
 
     public void ImageViewAnimatedChange(Context c, final ImageView v, final Bitmap new_image) {
