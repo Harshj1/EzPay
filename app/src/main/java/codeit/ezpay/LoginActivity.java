@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.Interpolator;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -38,7 +39,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 import ai.api.AIDataService;
@@ -50,6 +54,7 @@ import ai.api.model.AIRequest;
 import ai.api.model.AIResponse;
 import ai.api.model.Result;
 import codeit.ezpay.Model.ChatMessage;
+import codeit.ezpay.Model.Transaction;
 import codeit.ezpay.Model.Type;
 import codeit.ezpay.Model.User;
 
@@ -61,7 +66,7 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
     private FirebaseStorage mFirebaseStorage;
-    public static final int RC_SIGN_IN=1;
+    public static final int RC_SIGN_IN=9001;
     RecyclerView recyclerView;
     EditText editText;
     RelativeLayout addBtn;
@@ -109,7 +114,7 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
 
 
         userRef=FirebaseDatabase.getInstance().getReference().child("users");
-        
+
 
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -138,12 +143,12 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
                         @Override
                         protected void onPostExecute(AIResponse response) {
                             if (response != null) {
-
                                 Result result = response.getResult();
                                 final String reply = result.getFulfillment().getSpeech();
-                                if(reply.equals("Balance is"))
+                                Log.e("LOG",reply.toString());
+                                if(result.getAction().equals("balance"))
                                 {
-                                    transref.child("transaction").addValueEventListener(new ValueEventListener() {
+                                    transref.child("transaction").orderByKey().limitToLast(1).addValueEventListener(new ValueEventListener() {
                                         @Override
                                         public void onDataChange(DataSnapshot dataSnapshot) {
                                             for(DataSnapshot snapshot : dataSnapshot.getChildren())
@@ -162,7 +167,137 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
                                         }
 
                                     });
+                                }
+                                else if(result.getAction().equals("pay") || result.getAction().equals("payemail"))
+                                {
+                                    final String payee = result.getStringParameter("receiver");
+                                    final String amount = result.getStringParameter("amount");
+                                    Log.e("GET","JI"+amount);
+                                    final String[] payeeUID = new String[1];
+                                    final boolean[] userfound = {false};
+                                    final String[] currbalance = new String[2];
+                                    userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
 
+                                            for(DataSnapshot snapshot : dataSnapshot.getChildren())
+                                            {
+                                                if(snapshot.child("mail_id").getValue().toString().equals(payee)) {
+                                                    payeeUID[0] = snapshot.child("uid").getValue().toString();
+                                                    userfound[0] = true;
+                                                    break;
+                                                }
+                                            }
+                                            if(userfound[0])
+                                            {
+                                                transref.child("transaction").orderByKey().limitToLast(1).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                    @Override
+                                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                                        for (DataSnapshot snapshot : dataSnapshot.getChildren())
+                                                        {
+                                                            Log.e("TAG", snapshot.toString());
+                                                            currbalance[0] = snapshot.child("balance").getValue().toString();
+                                                            Log.e("Success", currbalance[0]);
+                                                            break;
+                                                        }
+                                                        Log.e("Success", String.valueOf(Integer.parseInt(currbalance[0])));
+                                                        if(Integer.parseInt(currbalance[0])>=Integer.parseInt(amount))
+                                                        {
+                                                            currbalance[0]= String.valueOf(Integer.parseInt(currbalance[0])-Integer.parseInt(amount));
+                                                            transref.child("transaction").push().setValue(new Transaction(Integer.parseInt(currbalance[0]),getTimeStamp(),new Type(payee,mFirebaseAuth.getCurrentUser().getEmail(),"Withdrawn",Integer.parseInt(amount))));
+                                                            Log.e("Success",currbalance[0]);
+                                                            ref.child(payeeUID[0]).child("transaction").orderByKey().limitToLast(1).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                @Override
+                                                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                                                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                                                        currbalance[1] = snapshot.child("balance").getValue().toString();
+                                                                        Log.e("Balance", currbalance[1]);
+                                                                        break;
+                                                                    }
+                                                                    currbalance[1] = String.valueOf(Integer.parseInt(currbalance[1]) + Integer.parseInt(amount));
+                                                                    ref.child(payeeUID[0]).child("transaction").push().setValue(new Transaction(Integer.parseInt(currbalance[1]),getTimeStamp(),new Type(mFirebaseAuth.getCurrentUser().getEmail(),payee,"Deposit",Integer.parseInt(amount))));
+                                                                    ChatMessage chatMessage = new ChatMessage("Money succesfully transferred.\nYour account balance is: "+currbalance[0], "bot");
+                                                                    chatref.child("chat").push().setValue(chatMessage);
+                                                                }
+                                                                @Override
+                                                                public void onCancelled(DatabaseError databaseError) {
+                                                                }
+                                                            });
+//                                                            ref.child(payeeUID[0]).child("transaction").push().setValue(new codeit.ezpay.Model.Transaction(Integer.parseInt(amount),getTimeStamp(),new Type(mFirebaseAuth.getCurrentUser().getEmail(),payee,"Transfer")));
+                                                        }
+                                                        else
+                                                        {
+                                                            ChatMessage chatMessage = new ChatMessage("Insufficient balance, please deposit in your account.\nYour account balance is: "+currbalance[0], "bot");
+                                                            chatref.child("chat").push().setValue(chatMessage);
+                                                        }
+                                                    }
+                                                    @Override
+                                                    public void onCancelled(DatabaseError databaseError) {
+                                                    }
+                                                });
+                                            }
+                                            else
+                                            {
+                                                ChatMessage chatMessage = new ChatMessage("Please check the receiver's id.", "bot");
+                                                chatref.child("chat").push().setValue(chatMessage);
+                                            }
+                                        }
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
+                                        }
+
+                                    });
+                                    ChatMessage chatMessage = new ChatMessage(reply, "bot");
+                                    chatref.child("chat").push().setValue(chatMessage);
+                                }
+                                else if(result.getAction().equals("history-email"))
+                                {
+                                    final String receiver = result.getStringParameter("receiver");
+                                    Log.e("History","Rec "+receiver);
+                                    final boolean[] historyexist = {false};
+                                    DatabaseReference typeref;
+                                    typeref = transref.child("transaction");
+//                                    final ArrayList<ChatMessage> chatMessage = new ArrayList<ChatMessage>();
+                                    typeref.addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            for (DataSnapshot snapshot : dataSnapshot.getChildren())
+                                            {
+//                                                Log.e("History",snapshot.child("type").child("to").getValue().toString());
+                                                if(snapshot.child("type").child("to").getValue().toString().equals(receiver))
+                                                {
+//                                                    Log.e("Histroy",snapshot.toString());
+                                                    String timestamp = snapshot.child("timestamp").getValue().toString();
+                                                    String amount = snapshot.child("type").child("amount").getValue().toString();
+                                                    String type;
+                                                    if(snapshot.child("type").child("type").getValue().toString().equals("Deposit"))
+                                                    {
+                                                        type = "received";
+                                                    }
+                                                    else
+                                                    {
+                                                        type = "paid";
+                                                    }
+                                                    String message = "You " + type + " Rs."+ amount + " at " + timestamp ;
+                                                    ChatMessage chatMessage = new ChatMessage(message, "bot");
+                                                    chatref.child("chat").push().setValue(chatMessage);
+                                                    historyexist[0] = true;
+                                                }
+                                            }
+                                            if(historyexist[0]){
+                                            }
+                                            else
+                                            {
+                                                ChatMessage chatMessage = new ChatMessage("No history exists", "bot");
+                                                chatref.child("chat").push().setValue(chatMessage);
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
+
+                                        }
+                                    });
                                 }
                                 else{
                                     Log.e("Tag",reply);
@@ -226,6 +361,29 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
                 final FirebaseUser user= firebaseAuth.getCurrentUser();
                 if(user!=null)
                 {
+                    userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+
+                            for(DataSnapshot snapshot : dataSnapshot.getChildren())
+                            {
+                                // Log.e("TAG",snapshot.toString());
+                                if(snapshot.child("uid").getValue().toString().equals(user.getUid())) {
+                                    userFoundFlag = 1;
+                                }
+                            }
+
+                            if(userFoundFlag==0)
+                            {
+                                userRef.push().setValue((new User(user.getDisplayName(), user.getUid(), user.getEmail())));
+                                transref.child("transaction").push().setValue(new codeit.ezpay.Model.Transaction(5000,getTimeStamp(),new Type("Initial","Initial","Deposit",5000)));
+                            }
+                        }
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                     chatref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
                     transref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
                     typeref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
@@ -269,29 +427,6 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
 
                     recyclerView.setAdapter(adapter);
 
-                    userRef.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-
-                            for(DataSnapshot snapshot : dataSnapshot.getChildren())
-                            {
-                               // Log.e("TAG",snapshot.toString());
-                                if(snapshot.child("uid").getValue().toString().equals(user.getUid())) {
-                                    userFoundFlag = 1;
-                                }
-                            }
-
-                            if(userFoundFlag==0)
-                            {
-                                userRef.push().setValue((new User(user.getDisplayName(), user.getUid(), user.getEmail())));
-                                transref.child("transaction").push().setValue(new codeit.ezpay.Model.Transaction(5000,getTimeStamp(),new Type("Initial","Initial","Deposit")));
-                            }
-                        }
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
                     Toast.makeText(LoginActivity.this,"You're signed in",Toast.LENGTH_SHORT).show();
 //                    onSignedInInitialize(user.getDisplayName());
 
@@ -395,11 +530,35 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
         chatref.child("chat").push().setValue(chatMessage0);
 
 
-        String reply = result.getFulfillment().getSpeech();
-        ChatMessage chatMessage = new ChatMessage(reply, "bot");
-        chatref.child("chat").push().setValue(chatMessage);
+        final String reply = result.getFulfillment().getSpeech();
+        Log.e("LOG",reply);
+        if(result.getAction().equals("balance"))
+        {
+            transref.child("transaction").orderByKey().limitToLast(1).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for(DataSnapshot snapshot : dataSnapshot.getChildren())
+                    {
+                        Log.e("TAG",snapshot.toString());
+                        balance1=snapshot.child("balance").getValue().toString();
+                        Log.e("Tag",snapshot.child("balance").getValue().toString());
+                        break;
+                    }
+                    ChatMessage chatMessage = new ChatMessage(reply+" "+balance1, "bot");
+                    chatref.child("chat").push().setValue(chatMessage);
+                }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
+                }
 
+            });
+        }
+        else
+        {
+            ChatMessage chatMessage = new ChatMessage(reply, "bot");
+            chatref.child("chat").push().setValue(chatMessage);
+        }
     }
 
     @Override
