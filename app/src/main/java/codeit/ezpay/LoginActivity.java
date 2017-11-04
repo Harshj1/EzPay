@@ -97,9 +97,9 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
 
         final AIRequest aiRequest = new AIRequest();
 
-        chatref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
-        transref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
-        typeref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
+        final FirebaseUser user1= mFirebaseAuth.getCurrentUser();
+
+
         userRef=FirebaseDatabase.getInstance().getReference().child("users");
         
 
@@ -183,45 +183,7 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
             }
         });
 
-        adapter = new FirebaseRecyclerAdapter<ChatMessage, chat_rec>(ChatMessage.class,R.layout.msglist,chat_rec.class,chatref.child("chat")) {
-            @Override
-            protected void populateViewHolder(chat_rec viewHolder, ChatMessage model, int position) {
-                if (model.getMsgUser().equals(mFirebaseAuth.getCurrentUser().getDisplayName())) {
 
-
-                    viewHolder.rightText.setText(model.getMsgText());
-
-                    viewHolder.rightText.setVisibility(View.VISIBLE);
-                    viewHolder.leftText.setVisibility(View.GONE);
-                }
-                else {
-                    viewHolder.leftText.setText(model.getMsgText());
-
-                    viewHolder.rightText.setVisibility(View.GONE);
-                    viewHolder.leftText.setVisibility(View.VISIBLE);
-                }
-            }
-        };
-
-        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-            @Override
-            public void onItemRangeInserted(int positionStart, int itemCount) {
-                super.onItemRangeInserted(positionStart, itemCount);
-
-                int msgCount = adapter.getItemCount();
-                int lastVisiblePosition = linearLayoutManager.findLastCompletelyVisibleItemPosition();
-
-                if (lastVisiblePosition == -1 ||
-                        (positionStart >= (msgCount - 1) &&
-                                lastVisiblePosition == (positionStart - 1))) {
-                    recyclerView.scrollToPosition(positionStart);
-
-                }
-
-            }
-        });
-
-        recyclerView.setAdapter(adapter);
 
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -230,6 +192,51 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
                 final FirebaseUser user= firebaseAuth.getCurrentUser();
                 if(user!=null)
                 {
+                    chatref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
+                    transref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
+                    typeref = ref.child(mFirebaseAuth.getCurrentUser().getUid());
+
+
+                    adapter = new FirebaseRecyclerAdapter<ChatMessage, chat_rec>(ChatMessage.class,R.layout.msglist,chat_rec.class,chatref.child("chat")) {
+                        @Override
+                        protected void populateViewHolder(chat_rec viewHolder, ChatMessage model, int position) {
+                            if (model.getMsgUser().equals(mFirebaseAuth.getCurrentUser().getDisplayName())) {
+
+
+                                viewHolder.rightText.setText(model.getMsgText());
+
+                                viewHolder.rightText.setVisibility(View.VISIBLE);
+                                viewHolder.leftText.setVisibility(View.GONE);
+                            }
+                            else {
+                                viewHolder.leftText.setText(model.getMsgText());
+
+                                viewHolder.rightText.setVisibility(View.GONE);
+                                viewHolder.leftText.setVisibility(View.VISIBLE);
+                            }
+                        }
+                    };
+
+                    adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+                        @Override
+                        public void onItemRangeInserted(int positionStart, int itemCount) {
+                            super.onItemRangeInserted(positionStart, itemCount);
+
+                            int msgCount = adapter.getItemCount();
+                            int lastVisiblePosition = linearLayoutManager.findLastCompletelyVisibleItemPosition();
+
+                            if (lastVisiblePosition == -1 ||
+                                    (positionStart >= (msgCount - 1) &&
+                                            lastVisiblePosition == (positionStart - 1))) {
+                                recyclerView.scrollToPosition(positionStart);
+
+                            }
+
+                        }
+                    });
+
+                    recyclerView.setAdapter(adapter);
+
                     userRef.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
