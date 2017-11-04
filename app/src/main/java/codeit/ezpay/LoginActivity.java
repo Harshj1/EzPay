@@ -32,8 +32,12 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import ai.api.AIDataService;
 import ai.api.AIListener;
@@ -44,6 +48,7 @@ import ai.api.model.AIRequest;
 import ai.api.model.AIResponse;
 import ai.api.model.Result;
 import codeit.ezpay.Model.ChatMessage;
+import codeit.ezpay.Model.Type;
 import codeit.ezpay.Model.User;
 
 public class LoginActivity extends AppCompatActivity implements AIListener {
@@ -251,6 +256,7 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
                             if(userFoundFlag==0)
                             {
                                 userRef.push().setValue((new User(user.getDisplayName(), user.getUid(), user.getEmail())));
+                                transref.child("transaction").push().setValue(new codeit.ezpay.Model.Transaction(5000,getTimeStamp(),new Type("Initial","Initial","Deposit")));
                             }
                         }
                         @Override
@@ -274,6 +280,11 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
                 }
             }
         };
+    }
+
+    public String getTimeStamp(){
+        String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());;
+        return timeStamp;
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
