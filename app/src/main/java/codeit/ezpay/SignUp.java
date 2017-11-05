@@ -100,7 +100,7 @@ public class SignUp extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(),"Enter your Name!",Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if(TextUtils.isEmpty(creditCardNumber)||inputCreditCardNumber.getText().length()!=16)
+                if(TextUtils.isEmpty(creditCardNumber)||inputCreditCardNumber.getText().length()!=6)
                 {
                     Toast.makeText(getApplicationContext(),"Enter valid Credit Card Details!",Toast.LENGTH_SHORT).show();
                     return;

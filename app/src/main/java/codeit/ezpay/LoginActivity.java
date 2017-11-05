@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -26,6 +25,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -118,9 +118,7 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
 
 
         userRef=FirebaseDatabase.getInstance().getReference().child("users");
-//        String shlok= mFirebaseAuth.getCurrentUser().getPhotoUrl().toString();
-        Uri uri = mFirebaseAuth.getCurrentUser().getProviderData().get(0).getPhotoUrl();
-        Log.e("tag", String.valueOf(uri));
+
         //Glide.with(userImage.getContext()).load(mFirebaseAuth.getCurrentUser().getPhotoUrl().toString()).into(userImage);
         userName.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -129,6 +127,8 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
                 finish();
             }
         });
+
+
 
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -445,7 +445,9 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
 
         //get current user
         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
+        final String[] upperString = new String[1];
+        final String[] alpha = new String[1];
+        final ColorGenerator colorGenerator = ColorGenerator.MATERIAL;
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -455,6 +457,26 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
                     // launch login activity
                     startActivity(new Intent(LoginActivity.this, SignIn.class));
                     finish();
+                }
+                else
+                {
+                   // upperString[0] = mFirebaseAuth.getCurrentUser().getDisplayName().substring(0,1).toUpperCase()
+                     //       + mFirebaseAuth.getCurrentUser().getDisplayName().substring(1);
+
+                      //alpha[0] = String.valueOf(mFirebaseAuth.getCurrentUser().getDisplayName().charAt(0));
+                     //int color = colorGenerator.getRandomColor();
+                    userName.setText(mFirebaseAuth.getCurrentUser().getDisplayName().toUpperCase());
+//                    TextDrawable textDrawable =
+//                            TextDrawable.builder()
+//                                    .beginConfig()
+//                                    .textColor(Color.parseColor("#FFFFFF"))
+//                                    .useFont(Typeface.DEFAULT)
+//                                    .fontSize(40)
+//                                    .bold()
+//                                    .toUpperCase()
+//                                    .endConfig()
+//                                    .buildRound(alpha[0],color);
+//                    userImage.setImageDrawable(textDrawable);
                 }
             }
         };
@@ -476,7 +498,7 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
 //                            {
 //                                userRef.push().setValue((new User(user.getDisplayName(), user.getUid(), user.getEmail(),user.getPhotoUrl().toString())));
 //                                Glide.with(userImage.getContext()).load(mFirebaseAuth.getCurrentUser().getPhotoUrl().toString()).into(userImage);
-                                userName.setText(mFirebaseAuth.getCurrentUser().getDisplayName());
+
 //                                transref.child("transaction").push().setValue(new codeit.ezpay.Model.Transaction(5000,getTimeStamp(),new Type("Initial","Initial","Deposit",5000)));
 //                            }
 //                        }
