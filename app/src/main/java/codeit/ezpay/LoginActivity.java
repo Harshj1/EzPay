@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -324,69 +326,10 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
                 }
                 else
                 {
-                   // upperString[0] = mFirebaseAuth.getCurrentUser().getDisplayName().substring(0,1).toUpperCase()
-                     //       + mFirebaseAuth.getCurrentUser().getDisplayName().substring(1);
-
-                      //alpha[0] = String.valueOf(mFirebaseAuth.getCurrentUser().getDisplayName().charAt(0));
-                     //int color = colorGenerator.getRandomColor();
                     userName.setText(mFirebaseAuth.getCurrentUser().getDisplayName());
-//                    TextDrawable textDrawable =
-//                            TextDrawable.builder()
-//                                    .beginConfig()
-//                                    .textColor(Color.parseColor("#FFFFFF"))
-//                                    .useFont(Typeface.DEFAULT)
-//                                    .fontSize(40)
-//                                    .bold()
-//                                    .toUpperCase()
-//                                    .endConfig()
-//                                    .buildRound(alpha[0],color);
-//                    userImage.setImageDrawable(textDrawable);
                 }
             }
         };
-//                    userRef.addValueEventListener(new ValueEventListener() {
-//                        @Override
-//                        public void onDataChange(DataSnapshot dataSnapshot) {
-//
-//                            for(DataSnapshot snapshot : dataSnapshot.getChildren())
-//                            {
-//                               // Log.e("TAG",snapshot.toString());
-//                                if(snapshot.child("uid").getValue().toString().equals(user.getUid())) {
-//                                    userFoundFlag = 1;
-//                                    Glide.with(userImage.getContext()).load(user.getPhotoUrl().toString()).into(userImage);
-//                                    userName.setText(user.getDisplayName());
-//                                }
-//                            }
-//
-//                            if(userFoundFlag==0)
-//                            {
-//                                userRef.push().setValue((new User(user.getDisplayName(), user.getUid(), user.getEmail(),user.getPhotoUrl().toString())));
-//                                Glide.with(userImage.getContext()).load(mFirebaseAuth.getCurrentUser().getPhotoUrl().toString()).into(userImage);
-
-//                                transref.child("transaction").push().setValue(new codeit.ezpay.Model.Transaction(5000,getTimeStamp(),new Type("Initial","Initial","Deposit",5000)));
-//                            }
-//                        }
-//                        @Override
-//                        public void onCancelled(DatabaseError databaseError) {
-//
-//                        }
-//                    });
-//                    Toast.makeText(LoginActivity.this,"You're signed in",Toast.LENGTH_SHORT).show();
-////                    onSignedInInitialize(user.getDisplayName());
-//
-//                }
-//                else
-//                {
-//                    //   OnSignedOutCleanUp();
-//
-//                    startActivityForResult(AuthUI.getInstance()
-//                            .createSignInIntentBuilder()
-//                            .setIsSmartLockEnabled(false)
-//                            .setProviders(AuthUI.EMAIL_PROVIDER,AuthUI.GOOGLE_PROVIDER)
-//                            .build(),RC_SIGN_IN);
-//                }
-//            }
-//        };
     }
 
     public String getTimeStamp(){
@@ -851,6 +794,19 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
     protected void onResume() {
         super.onResume();
         mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+        ConnectivityManager conMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if ( conMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED
+                || conMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED ) {
+
+            // notify user you are online
+
+        }
+        else if ( conMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.DISCONNECTED
+                || conMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.DISCONNECTED) {
+
+            Toast.makeText(LoginActivity.this,"Please check Internet connection",Toast.LENGTH_LONG).show();
+        }
     }
 
     public void ImageViewAnimatedChange(Context c, final ImageView v, final Bitmap new_image) {

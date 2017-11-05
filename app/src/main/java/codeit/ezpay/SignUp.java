@@ -1,6 +1,9 @@
 package codeit.ezpay;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
@@ -45,12 +48,11 @@ public class SignUp extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_sign_up);
 
         auth = FirebaseAuth.getInstance();
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.hide();
-        //getSupportActionBar().hide();
+
         btnSignIn = (Button) findViewById(R.id.sign_in_button);
         btnSignUp = (Button) findViewById(R.id.sign_up_button);
         inputEmail = (TextInputEditText) findViewById(R.id.email);
@@ -166,6 +168,19 @@ public class SignUp extends AppCompatActivity {
         super.onResume();
         auth.addAuthStateListener(mAuthListener);
         progressBar.setVisibility(View.GONE);
+        ConnectivityManager conMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if ( conMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED
+                || conMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED ) {
+
+            // notify user you are online
+
+        }
+        else if ( conMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.DISCONNECTED
+                || conMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.DISCONNECTED) {
+
+            Toast.makeText(SignUp.this,"Please check Internet connection",Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override

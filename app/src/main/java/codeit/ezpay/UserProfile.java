@@ -31,6 +31,8 @@ public class UserProfile extends AppCompatActivity {
             super.onCreate(savedInstanceState);
             setContentView(R.layout.activity_user_profile);
 
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
             name=(TextView)findViewById(R.id.name);
             emailId=(TextView)findViewById(R.id.emailid);
             creditCardNumber=(TextView)findViewById(R.id.creditcardnumber);
@@ -40,9 +42,11 @@ public class UserProfile extends AppCompatActivity {
             ref = FirebaseDatabase.getInstance().getReference();
             ref.keepSynced(true);
 
+        final String[] credit = new String[1];
+
         userRef=FirebaseDatabase.getInstance().getReference().child("users");
 
-            final FirebaseUser user= firebaseAuth.getInstance().getCurrentUser();
+        final FirebaseUser user= firebaseAuth.getInstance().getCurrentUser();
         String[] nameArray = user.getDisplayName().split(" ");
         ColorGenerator colorGenerator = ColorGenerator.MATERIAL;
 
@@ -70,6 +74,27 @@ public class UserProfile extends AppCompatActivity {
                         .buildRound(alpha,color);
         userProfileImage.setImageDrawable(textDrawable);
 
+        userRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot : dataSnapshot.getChildren())
+                {
+                    if(snapshot.child("mail_id").getValue().toString().equals(firebaseAuth.getInstance().getCurrentUser().getEmail()))
+                    {
+                        credit[0] = snapshot.child("credit_card_number").getValue().toString();
+                        break;
+                    }
+                }
+                credit[0] = credit[0].substring(credit[0].length()-2);
+                creditCardNumber.setText("Credit Card Number: XXXX"+credit[0]);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
     @Override
@@ -89,24 +114,12 @@ public class UserProfile extends AppCompatActivity {
             public void onCancelled(DatabaseError databaseError) {
             }
         });
-        userRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot snapshot : dataSnapshot.getChildren())
-                {
-                    creditCardNumber.setText("Credit Card Number: "+snapshot.child("credit_card_number").getValue().toString());
-                    break;
-                }
-            }
+    }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-
-
-
-        });
+    @Override
+    public boolean onSupportNavigateUp(){
+        startActivity(new Intent(UserProfile.this, LoginActivity.class));
+        return true;
     }
 
     @Override
