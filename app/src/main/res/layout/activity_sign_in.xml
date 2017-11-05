@@ -10,7 +10,7 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:background="@color/colorPrimary"
+        android:background="#f0f0f5"
         android:gravity="center"
         android:orientation="vertical"
         android:padding="@dimen/activity_horizontal_margin">
@@ -23,9 +23,10 @@
             android:layout_marginBottom="30dp"
             android:src="@drawable/ez_pay" />
 
-        <android.support.design.widget.TextInputLayout
+       <!-- <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_button">
 
             <EditText
                 android:id="@+id/email"
@@ -36,9 +37,32 @@
                 android:inputType="textEmailAddress"
                 android:textColor="@android:color/white"
                 android:textColorHint="@android:color/white" />
-        </android.support.design.widget.TextInputLayout>
+        </android.support.design.widget.TextInputLayout> -->
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/rounded_edittext"
+            android:hint="@string/email"
+            android:inputType="textWebEmailAddress"
+            android:padding="8dp"
+            android:textSize="20sp" />
 
-        <android.support.design.widget.TextInputLayout
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/rounded_edittext"
+            android:hint="Password"
+            android:inputType="textWebEmailAddress"
+            android:padding="8dp"
+            android:textSize="20sp" />
+
+      <!--  <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -52,7 +76,7 @@
                 android:textColor="@android:color/white"
                 android:textColorHint="@android:color/white" />
         </android.support.design.widget.TextInputLayout>
-
+-->
         <!-- Login Button -->
 
         <Button
@@ -60,7 +84,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dip"
-            android:background="@color/colorAccent"
+            android:background="@drawable/login_button"
             android:text="@string/btn_login"
             android:textColor="@android:color/black" />
 
@@ -75,7 +99,7 @@
             android:background="@null"
             android:text="@string/btn_link_to_register"
             android:textAllCaps="false"
-            android:textColor="@color/white"
+            android:textColor="#000"
             android:textSize="15dp" />
     </LinearLayout>
 
