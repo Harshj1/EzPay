@@ -4,10 +4,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -29,13 +29,14 @@ public class SignIn extends AppCompatActivity {
         //setContentView(R.layout.activity_sign_in);
 
         auth = FirebaseAuth.getInstance();
-
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.hide();
         if (auth.getCurrentUser() != null) {
             startActivity(new Intent(SignIn.this, LoginActivity.class));
             finish();
             }
 
-        getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
+//        getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
         getSupportActionBar().hide();
 
         // set the view now
