@@ -2,11 +2,12 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle" android:padding="10dp">
     <!-- you can use any color you want I used here gray color-->
-    <gradient
-        android:startColor="#99c2ff"
-        android:centerColor="#4d94ff"
-        android:endColor="#3385ff"
-        />
+    <!--<gradient-->
+        <!--android:startColor="#99c2ff"-->
+        <!--android:centerColor="#4d94ff"-->
+        <!--android:endColor="#3385ff"-->
+        <!--/>-->
+    <solid android:color="#3F51B5"/>
     <corners
      android:topLeftRadius="30dp"
         android:topRightRadius="30dp"

@@ -3,12 +3,12 @@ package codeit.ezpay;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -30,7 +30,7 @@ import codeit.ezpay.Model.User;
 public class SignUp extends AppCompatActivity {
 
 
-    private EditText inputEmail, inputPassword, inputName, inputCreditCardNumber;
+    private TextInputEditText inputEmail, inputPassword, inputName, inputCreditCardNumber;
     private Button btnSignIn, btnSignUp;
     private ProgressBar progressBar;
     private FirebaseAuth auth;
@@ -50,11 +50,11 @@ public class SignUp extends AppCompatActivity {
 
         btnSignIn = (Button) findViewById(R.id.sign_in_button);
         btnSignUp = (Button) findViewById(R.id.sign_up_button);
-        inputEmail = (EditText) findViewById(R.id.email);
-        inputPassword = (EditText) findViewById(R.id.password);
+        inputEmail = (TextInputEditText) findViewById(R.id.email);
+        inputPassword = (TextInputEditText) findViewById(R.id.password);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        inputName=(EditText)findViewById(R.id.inputname);
-        inputCreditCardNumber=(EditText)findViewById(R.id.inputcreditcardnumber);
+        inputName=(TextInputEditText) findViewById(R.id.inputname);
+        inputCreditCardNumber=(TextInputEditText) findViewById(R.id.inputcreditcardnumber);
         ref = FirebaseDatabase.getInstance().getReference();
         ref.keepSynced(true);
 

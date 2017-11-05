@@ -58,7 +58,7 @@
             android:layout_marginTop="15dp"
             android:background="@drawable/rounded_edittext"
             android:hint="Password"
-            android:inputType="textWebEmailAddress"
+            android:inputType="textPassword"
             android:padding="8dp"
             android:textSize="20sp" />
 
