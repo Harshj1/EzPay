@@ -329,7 +329,7 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
 
                       //alpha[0] = String.valueOf(mFirebaseAuth.getCurrentUser().getDisplayName().charAt(0));
                      //int color = colorGenerator.getRandomColor();
-                    userName.setText(mFirebaseAuth.getCurrentUser().getDisplayName().toUpperCase());
+                    userName.setText(mFirebaseAuth.getCurrentUser().getDisplayName());
 //                    TextDrawable textDrawable =
 //                            TextDrawable.builder()
 //                                    .beginConfig()
