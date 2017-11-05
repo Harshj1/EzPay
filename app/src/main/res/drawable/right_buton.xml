@@ -4,8 +4,8 @@
     <!-- you can use any color you want I used here gray color-->
     <solid android:color="#3F51B5"/>
     <corners
-        android:topLeftRadius="30dp"
-        android:topRightRadius="30dp"
-        android:bottomLeftRadius="30dp"/>
+        android:topLeftRadius="20dp"
+        android:topRightRadius="20dp"
+        android:bottomLeftRadius="20dp"/>
 
 </shape>
