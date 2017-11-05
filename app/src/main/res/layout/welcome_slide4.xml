@@ -11,9 +11,7 @@
         android:gravity="center_horizontal"
         android:orientation="vertical">
 
-        <ImageView
-            android:layout_width="@dimen/img_width_height"
-            android:layout_height="@dimen/img_width_height" />
+
 
         <TextView
             android:layout_width="wrap_content"
@@ -65,6 +63,30 @@
             android:paddingRight="@dimen/desc_padding"
             android:text="Get all my transfers to Amazon"
             android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/slide_desc" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:paddingLeft="@dimen/desc_padding"
+            android:paddingRight="@dimen/desc_padding"
+            android:text="*Use email-id for Transactions*"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/slide_desc" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:paddingLeft="@dimen/desc_padding"
+            android:paddingRight="@dimen/desc_padding"
+            android:text="*Some of the entities that exist are Flipkart, Amazon, Snapdeal*"
+            android:textAlignment="center"
+            android:textStyle="bold"
             android:textColor="@android:color/white"
             android:textSize="@dimen/slide_desc" />
 
