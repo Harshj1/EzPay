@@ -58,6 +58,7 @@ import ai.api.model.Result;
 import codeit.ezpay.Model.ChatMessage;
 import codeit.ezpay.Model.Transaction;
 import codeit.ezpay.Model.Type;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class LoginActivity extends AppCompatActivity implements AIListener {
 
@@ -95,7 +96,7 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
         recyclerView = (RecyclerView)findViewById(R.id.recyclerView);
         editText = (EditText)findViewById(R.id.editText);
         addBtn = (RelativeLayout)findViewById(R.id.addBtn);
-        userImage=(ImageView)findViewById(R.id.userImage);
+        userImage=(CircleImageView)findViewById(R.id.userImage);
         userName=(TextView)findViewById(R.id.userName);
         recyclerView.setHasFixedSize(true);
         final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -126,6 +127,14 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
 
         //Glide.with(userImage.getContext()).load(mFirebaseAuth.getCurrentUser().getPhotoUrl().toString()).into(userImage);
         userName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(LoginActivity.this,UserProfile.class));
+                finish();
+            }
+        });
+
+        userImage.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(LoginActivity.this,UserProfile.class));
@@ -746,6 +755,9 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
                     });
             return true;
         }
+//        else if( id == R.id.tutorial){
+//            startActivity(new Intent(LoginActivity.this, WelcomeActivity.class));
+//        }
 
         return super.onOptionsItemSelected(item);
     }
