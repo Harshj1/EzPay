@@ -9,13 +9,14 @@ public class User {
     private String uid;
     private String mail_id;
     private String profile_url;
-    private String credits;
+    private String creditcardnumber;
 
-    public User(String name, String uid, String mail_id) {
+    public User(String name, String uid, String mail_id,String creditcardnumber) {
         this.name = name;
         this.uid = uid;
         this.mail_id = mail_id;
       //  this.profile_url=profile_url;
+        this.creditcardnumber=creditcardnumber;
     }
 
     public String getName() {
@@ -34,7 +35,7 @@ public class User {
         return profile_url;
     }
 
-    public String getCredits() {
-        return credits;
+    public String getCredit_card_number() {
+        return creditcardnumber;
     }
 }

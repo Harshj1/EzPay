@@ -34,6 +34,7 @@ public class SignUp extends AppCompatActivity {
     private ProgressBar progressBar;
     private FirebaseAuth auth;
     String name;
+    String creditCardNumber;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
 
     DatabaseReference ref,userRef,transref;
@@ -76,7 +77,7 @@ public class SignUp extends AppCompatActivity {
                 String email = inputEmail.getText().toString().trim();
                 String password = inputPassword.getText().toString().trim();
                 name=inputName.getText().toString().trim();
-                String creditCardNumber=inputCreditCardNumber.getText().toString().trim();
+                 creditCardNumber=inputCreditCardNumber.getText().toString().trim();
                 if (TextUtils.isEmpty(email)) {
                     Toast.makeText(getApplicationContext(), "Enter email address!", Toast.LENGTH_SHORT).show();
                     return;
@@ -86,7 +87,7 @@ public class SignUp extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Enter password!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                
+
 
                 if (password.length() < 6) {
                     Toast.makeText(getApplicationContext(), "Password too short, enter minimum 6 characters!", Toast.LENGTH_SHORT).show();
@@ -141,7 +142,7 @@ public class SignUp extends AppCompatActivity {
                             .setDisplayName(name).build();
                     user.updateProfile(profileUpdates);
                     transref = ref.child(auth.getCurrentUser().getUid());
-                    userRef.push().setValue((new User(name, auth.getCurrentUser().getUid(), auth.getCurrentUser().getEmail())));
+                    userRef.push().setValue((new User(name, auth.getCurrentUser().getUid(), auth.getCurrentUser().getEmail(),creditCardNumber)));
                     transref.child("transaction").push().setValue(new codeit.ezpay.Model.Transaction(5000,getTimeStamp(),new Type("Initial","Initial","Deposit",5000)));
                     Intent intent = new Intent(SignUp.this, LoginActivity.class);
                     startActivity(intent);

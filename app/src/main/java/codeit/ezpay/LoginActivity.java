@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -117,7 +118,10 @@ public class LoginActivity extends AppCompatActivity implements AIListener {
 
 
         userRef=FirebaseDatabase.getInstance().getReference().child("users");
-
+//        String shlok= mFirebaseAuth.getCurrentUser().getPhotoUrl().toString();
+        Uri uri = mFirebaseAuth.getCurrentUser().getProviderData().get(0).getPhotoUrl();
+        Log.e("tag", String.valueOf(uri));
+        //Glide.with(userImage.getContext()).load(mFirebaseAuth.getCurrentUser().getPhotoUrl().toString()).into(userImage);
         userName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
