@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
@@ -34,9 +35,6 @@ public class SignIn extends AppCompatActivity {
             startActivity(new Intent(SignIn.this, LoginActivity.class));
             finish();
             }
-
-        getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
-        getSupportActionBar().hide();
 
         // set the view now
         setContentView(R.layout.activity_sign_in);
