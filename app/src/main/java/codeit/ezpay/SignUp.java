@@ -90,13 +90,13 @@ public class SignUp extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(),"Enter your Name!",Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if(TextUtils.isEmpty(creditCardNumber))
+                if(TextUtils.isEmpty(creditCardNumber)&&creditCardNumber.length()!=16)
                 {
-                    Toast.makeText(getApplicationContext(),"Enter your Credit Card Number!",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),"Enter valid Credit Card Details!",Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                
+
                 progressBar.setVisibility(View.VISIBLE);
                 //create user
                 auth.createUserWithEmailAndPassword(email, password)

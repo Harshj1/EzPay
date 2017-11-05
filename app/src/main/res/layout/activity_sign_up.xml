@@ -89,7 +89,7 @@
                 android:hint="Enter your Credit Card Number"
                 android:imeActionId="@+id/login"
                 android:imeOptions="actionUnspecified"
-                android:inputType="text"
+                android:inputType="number"
                 android:maxLines="1"
                 android:singleLine="true"
                 android:textColor="@android:color/white" />
